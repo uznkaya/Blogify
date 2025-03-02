@@ -24,5 +24,13 @@ namespace Blogify.Application.Services
         {
             return await _userRepository.GetUserByUsernameAsync(username);
         }
+        public async Task DeleteUserAsync(int userId)
+        {
+            await _userRepository.DeleteUserAsync(userId);
+        }
+        public async Task EditUserAsync(User user)
+        {
+            await _userRepository.EditUserAsync(user);
+        }
     }
 }

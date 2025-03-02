@@ -32,5 +32,19 @@ namespace Blogify.WebAPI.Controllers
             await _userService.AddUserAsync(user);
             return Ok();
         }
+
+        [HttpDelete("{userId}")]
+        public async Task<IActionResult> DeleteUser(int userId)
+        {
+            await _userService.DeleteUserAsync(userId);
+            return Ok();
+        }
+
+        [HttpPut("{user}")]
+        public async Task<IActionResult> EditUser(User user)
+        {
+            await _userService.EditUserAsync(user);
+            return Ok();
+        }
     }
 }

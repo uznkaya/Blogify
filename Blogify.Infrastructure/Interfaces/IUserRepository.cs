@@ -6,5 +6,7 @@ namespace Blogify.Infrastructure.Interfaces
     {
         Task<User> GetUserByUsernameAsync(string username);
         Task AddUserAsync(User user);
+        Task DeleteUserAsync(int userId);
+        Task EditUserAsync(User user);
     }
 }
