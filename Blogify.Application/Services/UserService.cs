@@ -16,21 +16,28 @@ namespace Blogify.Application.Services
         {
             _userRepository = userRepository;
         }
+
         public async Task AddUserAsync(User user)
         {
             await _userRepository.AddUserAsync(user);
         }
-        public async Task<User> GetUserByUsernameAsync(string username)
+        public async Task<List<User>> GetAllUserAsync()
         {
-            return await _userRepository.GetUserByUsernameAsync(username);
+            return await _userRepository.GetAllUserAsync();
+        }
+        public async Task EditUserAsync(User user)
+        {
+            await _userRepository.EditUserAsync(user);
         }
         public async Task DeleteUserAsync(int userId)
         {
             await _userRepository.DeleteUserAsync(userId);
         }
-        public async Task EditUserAsync(User user)
+
+
+        public async Task<User> GetUserByUsernameAsync(string username)
         {
-            await _userRepository.EditUserAsync(user);
+            return await _userRepository.GetUserByUsernameAsync(username);
         }
     }
 }

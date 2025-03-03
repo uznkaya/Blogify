@@ -13,14 +13,23 @@ namespace Blogify.Infrastructure.Repositories
             _context = context;
         }
 
-        public async Task<User> GetUserByUsernameAsync(string username)
-        {
-            return await _context.Users.FirstOrDefaultAsync(x => x.Username == username);
-        }
-
         public async Task AddUserAsync(User user)
         {
             await _context.Users.AddAsync(user);
+            await _context.SaveChangesAsync();
+        }
+        public async Task<List<User>> GetAllUserAsync()
+        {
+            return await _context.Users.ToListAsync();
+        }
+        public async Task EditUserAsync(User user)
+        {
+            var _user = await _context.Users.FirstOrDefaultAsync(x => x.Id == user.Id);
+
+            if (_user == null)
+                throw new Exception("User not found");
+
+            _context.Users.Update(_user);
             await _context.SaveChangesAsync();
         }
         public async Task DeleteUserAsync(int userId)
@@ -54,15 +63,9 @@ namespace Blogify.Infrastructure.Repositories
             await _context.SaveChangesAsync();
         }
 
-        public async Task EditUserAsync(User user)
+        public async Task<User> GetUserByUsernameAsync(string username)
         {
-            var _user = await _context.Users.FirstOrDefaultAsync(x => x.Id == user.Id);
-
-            if (_user == null)
-                throw new Exception("User not found");
-
-            _context.Users.Update(_user);
-            await _context.SaveChangesAsync();
+            return await _context.Users.FirstOrDefaultAsync(x => x.Username == username);
         }
     }
 }
