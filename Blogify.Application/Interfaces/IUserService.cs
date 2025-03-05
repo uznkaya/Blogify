@@ -13,7 +13,6 @@ namespace Blogify.Application.Interfaces
         Task<IEnumerable<User>> GetAllUserAsync();
         Task UpdateUserAsync(User updatedUser, string? newPassword = null);
         Task DeleteUserAsync(int userId);
-        Task<User> GetUserByIdAsync(int userId);
         Task<User> GetUserByUsernameAsync(string username);
     }
 }
