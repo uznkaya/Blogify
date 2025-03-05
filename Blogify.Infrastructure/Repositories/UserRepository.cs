@@ -13,7 +13,11 @@ namespace Blogify.Infrastructure.Repositories
 
         public async Task<User> GetByUsernameAsync(string username)
         {
-            return await _dbSet.FirstOrDefaultAsync(u => u.Username == username);
+            return await _dbSet
+                .Include(bp => bp.BlogPosts)
+                .Include(c => c.Comments)
+                .Include(l => l.Likes)
+                .FirstOrDefaultAsync(u => u.Username == username);
         }
         public async Task DeleteUserAsync(int userId)
         {
