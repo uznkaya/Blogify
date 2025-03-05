@@ -1,4 +1,5 @@
-﻿using Blogify.Application.Interfaces;
+﻿using Blogify.Application.DTOs;
+using Blogify.Application.Interfaces;
 using Blogify.Domain.Entities;
 using Blogify.Infrastructure.Interfaces;
 using System;
@@ -17,27 +18,46 @@ namespace Blogify.Application.Services
             _userRepository = userRepository;
         }
 
-        public async Task AddUserAsync(User user)
+        public async Task<IEnumerable<User>> GetAllUserAsync()
         {
-            await _userRepository.AddUserAsync(user);
+            var users = await _userRepository.GetAllAsync();
+            if (users == null)
+                throw new Exception("No users found");
+
+            return users;
         }
-        public async Task<List<User>> GetAllUserAsync()
+        public async Task UpdateUserAsync(User updatedUser, string? newPassword = null)
         {
-            return await _userRepository.GetAllUserAsync();
-        }
-        public async Task EditUserAsync(User user)
-        {
-            await _userRepository.EditUserAsync(user);
+            var user = await _userRepository.GetByIdAsync(updatedUser.Id);
+            if (user == null)
+                throw new Exception("User not found");
+
+            user.Name = updatedUser.Name;
+            user.Surname = updatedUser.Surname;
+            user.Username = updatedUser.Username;
+
+            if (!string.IsNullOrEmpty(newPassword))
+            {
+                user.PasswordHash = BCrypt.Net.BCrypt.HashPassword(newPassword);
+            }
+
+            await _userRepository.UpdateAsync(user);
         }
         public async Task DeleteUserAsync(int userId)
         {
+            var user = _userRepository.GetByIdAsync(userId);
+            if (user == null)
+                throw new Exception("User not found");
+
             await _userRepository.DeleteUserAsync(userId);
         }
-
-
         public async Task<User> GetUserByUsernameAsync(string username)
         {
-            return await _userRepository.GetUserByUsernameAsync(username);
+            var user = await _userRepository.GetByUsernameAsync(username);
+            if (user == null)
+                throw new Exception("User not found");
+
+            return user;
         }
     }
 }

@@ -5,40 +5,23 @@ using Microsoft.EntityFrameworkCore;
 
 namespace Blogify.Infrastructure.Repositories
 {
-    class UserRepository : IUserRepository
+    class UserRepository : Repository<User>, IUserRepository
     {
-        private readonly BlogifyDbContext _context;
-        public UserRepository(BlogifyDbContext context)
+        public UserRepository(BlogifyDbContext context) : base(context)
         {
-            _context = context;
         }
 
-        public async Task AddUserAsync(User user)
+        public async Task<User> GetByUsernameAsync(string username)
         {
-            await _context.Users.AddAsync(user);
-            await _context.SaveChangesAsync();
-        }
-        public async Task<List<User>> GetAllUserAsync()
-        {
-            return await _context.Users.ToListAsync();
-        }
-        public async Task EditUserAsync(User user)
-        {
-            var _user = await _context.Users.FirstOrDefaultAsync(x => x.Id == user.Id);
-
-            if (_user == null)
-                throw new Exception("User not found");
-
-            _context.Users.Update(_user);
-            await _context.SaveChangesAsync();
+            return await _dbSet.FirstOrDefaultAsync(u => u.Username == username);
         }
         public async Task DeleteUserAsync(int userId)
         {
-            var user = await _context.Users
+            var user = await _dbSet
                 .Include(bp => bp.BlogPosts)
                 .Include(c => c.Comments)
                 .Include(l => l.Likes)
-                .FirstOrDefaultAsync(x => x.Id == userId);
+                .FirstOrDefaultAsync(u => u.Id == userId);
 
             if (user == null)
                 throw new Exception("User not found");
@@ -61,11 +44,6 @@ namespace Blogify.Infrastructure.Repositories
             }
 
             await _context.SaveChangesAsync();
-        }
-
-        public async Task<User> GetUserByUsernameAsync(string username)
-        {
-            return await _context.Users.FirstOrDefaultAsync(x => x.Username == username);
         }
     }
 }

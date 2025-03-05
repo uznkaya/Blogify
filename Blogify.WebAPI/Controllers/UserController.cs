@@ -1,4 +1,5 @@
-﻿using Blogify.Application.Interfaces;
+﻿using Blogify.Application.DTOs;
+using Blogify.Application.Interfaces;
 using Blogify.Domain.Entities;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
@@ -15,44 +16,69 @@ namespace Blogify.WebAPI.Controllers
             _userService = userService;
         }
 
-        [HttpPost]
-        public async Task<IActionResult> AddUser(User user)
-        {
-            await _userService.AddUserAsync(user);
-            return Ok();
-        }
-
         [HttpGet]
         public async Task<IActionResult> GetAllUser()
         {
-            var users = await _userService.GetAllUserAsync();
-            return Ok(users);
+            try
+            {
+                var users = await _userService.GetAllUserAsync();
+                return Ok(users);
+            }
+            catch (Exception ex)
+            {
+                return StatusCode(StatusCodes.Status500InternalServerError, ex.Message);
+            }
         }
-        
+
         [HttpPut]
-        public async Task<IActionResult> EditUser(User user)
+        public async Task<IActionResult> UpdateUser(UserDto userDto)
         {
-            await _userService.EditUserAsync(user);
-            return Ok();
+            try
+            {
+                var user = new User
+                {
+                    Name = userDto.Name,
+                    Surname = userDto.Surname,
+                    Username = userDto.Username
+                };
+
+                await _userService.UpdateUserAsync(user, userDto.Password);
+                return Ok("User updated successfully.");
+            }
+            catch (Exception ex)
+            {
+                return StatusCode(StatusCodes.Status500InternalServerError, ex.Message);
+
+            }
         }
-        
+
         [HttpDelete]
         public async Task<IActionResult> DeleteUser(int userId)
         {
-            await _userService.DeleteUserAsync(userId);
-            return Ok();
-        }
+            try
+            {
+                await _userService.DeleteUserAsync(userId);
+                return Ok(new { Message = "User deleted successfully." });
+            }
+            catch (Exception ex)
+            {
+                return StatusCode(StatusCodes.Status500InternalServerError, ex.Message);
+            }
 
+        }
 
         [HttpGet("GetUserByUsername")]
         public async Task<IActionResult> GetUserByUsername(string username)
         {
-            var user = await _userService.GetUserByUsernameAsync(username);
-            if (user == null)
+            try
             {
-                return NotFound();
+                var user = await _userService.GetUserByUsernameAsync(username);
+                return Ok(user);
             }
-            return Ok(user);
+            catch (Exception ex)
+            {
+                return StatusCode(StatusCodes.Status500InternalServerError, ex.Message);
+            }
         }
     }
 }

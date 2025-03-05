@@ -2,12 +2,9 @@
 
 namespace Blogify.Infrastructure.Interfaces
 {
-    public interface IUserRepository
+    public interface IUserRepository : IRepository<User>
     {
-        Task AddUserAsync(User user);
-        Task<List<User>> GetAllUserAsync();
-        Task EditUserAsync(User user);
+        Task<User> GetByUsernameAsync(string username);
         Task DeleteUserAsync(int userId);
-        Task<User> GetUserByUsernameAsync(string username);
     }
 }

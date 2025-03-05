@@ -22,7 +22,7 @@ namespace Blogify.Application.Services
 
         public async Task<string> Authenticate(string username, string password)
         {
-            var user = await _userRepository.GetUserByUsernameAsync(username);
+            var user = await _userRepository.GetByUsernameAsync(username);
             if (user == null || !BCrypt.Net.BCrypt.Verify(password, user.PasswordHash))
                 throw new UnauthorizedAccessException("Invalid username or password");
 
@@ -54,7 +54,7 @@ namespace Blogify.Application.Services
                 Name = name,
                 Surname = surname
             };
-            await _userRepository.AddUserAsync(user);
+            await _userRepository.AddAsync(user);
         }
     }
 }
