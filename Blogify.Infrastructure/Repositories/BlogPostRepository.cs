@@ -18,7 +18,7 @@ namespace Blogify.Infrastructure.Repositories
 
         public async Task DeleteBlogPostAsync(int blogPostId)
         {
-            var _blogpost = await _context.BlogPosts
+            var _blogpost = await _dbSet
                 .Include(c => c.Comments)
                 .Include(l => l.Likes)
                 .FirstOrDefaultAsync(x => x.Id == blogPostId);
