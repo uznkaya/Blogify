@@ -1,76 +1,109 @@
 ﻿using Blogify.Application.Interfaces;
 using Blogify.Domain.Entities;
+using Blogify.Domain.Exceptions;
 using Blogify.Infrastructure.Interfaces;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 
 namespace Blogify.Application.Services
 {
     public class CommentService : ICommentService
     {
-        private readonly ICommentRepository _commentRepository;
-        private readonly IUserRepository _userRepository;
-        private readonly IBlogPostRepository _blogPostRepository;
-
-        public CommentService(ICommentRepository commentRepository, IUserRepository userRepository, IBlogPostRepository blogPostRepository)
+        private readonly IUnitOfWork _unitOfWork;
+        public CommentService(IUnitOfWork unitOfWork)
         {
-            _commentRepository = commentRepository;
-            _userRepository = userRepository;
-            _blogPostRepository = blogPostRepository;
+            _unitOfWork = unitOfWork;
         }
 
         public async Task CreateCommentAsync(Comment comment)
         {
-            var user = await _userRepository.GetByIdAsync(comment.UserId);
+            var user = await _unitOfWork.Users.FindAsync(u => u.Id == comment.UserId && !u.IsDeleted);
             if (user == null)
-                throw new Exception("User not found");
+                throw new UserNotFoundException();
 
-            var blogPost = await _blogPostRepository.GetByIdAsync(comment.BlogPostId);
+            var blogPost = await _unitOfWork.BlogPosts.FindAsync(bp => bp.Id == comment.BlogPostId && !bp.IsDeleted);
             if (blogPost == null)
-                throw new Exception("Blogpost not found");
+                throw new BlogPostNotFoundException();
 
-            await _commentRepository.AddAsync(comment);
+            await _unitOfWork.Comments.AddAsync(comment);
+            await _unitOfWork.CompleteAsync();
         }
 
         public async Task DeleteCommentAsync(int commentId)
         {
-            var comment = _commentRepository.GetByIdAsync(commentId);
-            if(comment == null)
-                throw new Exception("Comment not found");
+            var comment = _unitOfWork.Users.FindAsync(u => u.Id == commentId && !u.IsDeleted);
+            if (comment == null)
+                throw new CommentNotFoundException();
 
-            await _commentRepository.DeleteCommentAsync(commentId);
+            await _unitOfWork.Comments.DeleteCommentAsync(commentId);
+            await _unitOfWork.CompleteAsync();
         }
 
         public async Task<IEnumerable<Comment>> GetAllCommentsAsync()
         {
-            var comments = await _commentRepository.GetAllAsync();
-            if (comments == null)
-                throw new Exception("No comments found");
+            var comments = await _unitOfWork.Comments.GetAllAsync();
+            if (!comments.Any())
+                throw new CommentNotFoundException();
 
             return comments;
         }
 
         public async Task<Comment> GetCommentByIdAsync(int commentId)
         {
-            var comment = await _commentRepository.GetByIdAsync(commentId);
+            var comment = await _unitOfWork.Comments.FindAsync(c => c.Id == commentId && !c.IsDeleted);
             if (comment == null)
-                throw new Exception("Comment not found");
+                throw new CommentNotFoundException();
 
             return comment;
         }
 
         public async Task UpdateCommentAsync(int commentId, Comment updatedComment)
         {
-            var comment = await _commentRepository.GetByIdAsync(commentId);
+            var comment = await _unitOfWork.Comments.FindAsync(c => c.Id == commentId && !c.IsDeleted);
             if (comment == null)
-                throw new Exception("Comment not found");
+                throw new CommentNotFoundException();
 
             comment.Content = updatedComment.Content;
 
-            await _commentRepository.UpdateAsync(comment);
+            await _unitOfWork.Comments.UpdateAsync(comment);
+            await _unitOfWork.CompleteAsync();
+        }
+
+        public async Task<IEnumerable<Comment>> GetCommentsByBlogPostIdAsync(int blogPostId)
+        {
+            var blogPost = await _unitOfWork.BlogPosts.FindAsync(bp => bp.Id == blogPostId && !bp.IsDeleted);
+            if (blogPost == null)
+                throw new BlogPostNotFoundException();
+
+            var comments = await _unitOfWork.Comments.GetCommentsByBlogPostIdAsync(blogPost.Id);
+            if (!comments.Any())
+                throw new CommentNotFoundException();
+
+            return comments;
+        }
+
+        public async Task<IEnumerable<Comment>> GetCommentsByUserIdAsync(int userId)
+        {
+            var user = await _unitOfWork.Users.FindAsync(u => u.Id == userId && !u.IsDeleted);
+            if (user == null)
+                throw new UserNotFoundException();
+
+            var comments = await _unitOfWork.Comments.GetCommentsByUserIdAsync(user.Id);
+            if (!comments.Any())
+                throw new CommentNotFoundException();
+
+            return comments;
+        }
+
+        public async Task<IEnumerable<Comment>> GetRepliesByCommentIdAsync(int commentId)
+        {
+            var parentComment = await _unitOfWork.Comments.FindAsync(c => c.Id == commentId && !c.IsDeleted);
+            if (parentComment == null)
+                throw new CommentNotFoundException("Parent Comment not found.");
+
+            var replies = await _unitOfWork.Comments.GetRepliesByCommentIdAsync(parentComment.Id);
+            if (!replies.Any())
+                throw new CommentNotFoundException($"Replies not found for parentCommandId:{commentId}");
+
+            return replies;
         }
     }
 }

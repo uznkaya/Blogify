@@ -1,9 +1,4 @@
 ﻿using Blogify.Domain.Entities;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 
 namespace Blogify.Application.Interfaces
 {
@@ -14,5 +9,8 @@ namespace Blogify.Application.Interfaces
         Task UpdateCommentAsync(int commentId, Comment comment);
         Task DeleteCommentAsync(int commentId);
         Task<Comment> GetCommentByIdAsync(int commentId);
+        Task<IEnumerable<Comment>> GetCommentsByBlogPostIdAsync(int blogPostId);
+        Task<IEnumerable<Comment>> GetCommentsByUserIdAsync(int userId);
+        Task<IEnumerable<Comment>> GetRepliesByCommentIdAsync(int commentId);
     }
 }

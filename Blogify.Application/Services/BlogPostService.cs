@@ -1,73 +1,91 @@
-﻿using Blogify.Application.DTOs;
-using Blogify.Application.Interfaces;
+﻿using Blogify.Application.Interfaces;
 using Blogify.Domain.Entities;
+using Blogify.Domain.Exceptions;
 using Blogify.Infrastructure.Interfaces;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 
 namespace Blogify.Application.Services
 {
     public class BlogPostService : IBlogPostService
     {
-        private readonly IBlogPostRepository _blogPostRepository;
-        private readonly IUserRepository _userRepository;
+        private readonly IUnitOfWork _unitOfWork;
 
-        public BlogPostService(IBlogPostRepository blogPostRepository, IUserRepository userRepository)
+        public BlogPostService(IUnitOfWork unitOfWork)
         {
-            _blogPostRepository = blogPostRepository;
-            _userRepository = userRepository;
+            _unitOfWork = unitOfWork;
         }
 
         public async Task CreateBlogPostAsync(BlogPost blogPost)
         {
-            var user = await _userRepository.GetByIdAsync(blogPost.UserId);
+            var user = await _unitOfWork.Users.FindAsync(u => u.Id == blogPost.UserId && !u.IsDeleted);
             if (user == null)
-                throw new Exception("User not found");
+                throw new UserNotFoundException();
 
-            await _blogPostRepository.AddAsync(blogPost);
+            await _unitOfWork.BlogPosts.AddAsync(blogPost);
+            await _unitOfWork.CompleteAsync();
         }
         public async Task<IEnumerable<BlogPost>> GetAllBlogPostAsync()
         {
-            var blogposts = await _blogPostRepository.GetAllAsync();
-            if (blogposts == null) 
-                throw new Exception("No blogposts found");
-            
+            var blogposts = await _unitOfWork.BlogPosts.GetAllAsync();
+            if (!blogposts.Any())
+                throw new BlogPostNotFoundException();
+
             return blogposts;
         }
         public async Task UpdateBlogPostAsync(int blogPostId, BlogPost updatedBlogPost)
         {
-            var user = await _userRepository.GetByIdAsync(updatedBlogPost.UserId);
+            var user = await _unitOfWork.Users.FindAsync(u => u.Id == updatedBlogPost.UserId && !u.IsDeleted);
             if (user == null)
-                throw new Exception("User not found");
+                throw new UserNotFoundException();
 
-            var blogPost = await _blogPostRepository.GetByIdAsync(blogPostId);
+            var blogPost = await _unitOfWork.BlogPosts.FindAsync(bp => bp.Id == blogPostId && !bp.IsDeleted);
             if (blogPost == null)
-                throw new Exception("Blogpost not found");
+                throw new BlogPostNotFoundException();
 
             blogPost.Title = updatedBlogPost.Title;
             blogPost.Content = updatedBlogPost.Content;
             blogPost.UserId = updatedBlogPost.UserId;
 
-            await _blogPostRepository.UpdateAsync(blogPost);
+            await _unitOfWork.BlogPosts.UpdateAsync(blogPost);
+            await _unitOfWork.CompleteAsync();
         }
         public async Task DeleteBlogPostAsync(int blogPostId)
         {
-            var blogPost = await _blogPostRepository.GetByIdAsync(blogPostId);
+            var blogPost = await _unitOfWork.BlogPosts.FindAsync(bp => bp.Id == blogPostId && !bp.IsDeleted);
             if (blogPost == null)
-                throw new Exception("Blogpost not found");
+                throw new BlogPostNotFoundException();
 
-            await _blogPostRepository.DeleteBlogPostAsync(blogPostId);
+            await _unitOfWork.BlogPosts.DeleteBlogPostAsync(blogPostId);
+            await _unitOfWork.CompleteAsync();
         }
         public async Task<BlogPost> GetBlogPostByIdAsync(int blogPostId)
         {
-            var blogPost = await _blogPostRepository.GetByIdAsync(blogPostId);
+            var blogPost = await _unitOfWork.BlogPosts.FindAsync(bp => bp.Id == blogPostId && !bp.IsDeleted);
             if (blogPost == null)
-                throw new Exception("Blogpost not found");
+                throw new BlogPostNotFoundException();
 
             return blogPost;
+        }
+
+        public async Task<IEnumerable<BlogPost>> GetBlogPostsByUserIdAsync(int userId)
+        {
+            var user = await _unitOfWork.Users.FindAsync(bp => bp.Id == userId && !bp.IsDeleted);
+            if (user == null)
+                throw new UserNotFoundException();
+
+            var blogPosts = await _unitOfWork.BlogPosts.GetBlogPostsByUserIdAsync(user.Id);
+            if (!blogPosts.Any())
+                throw new BlogPostNotFoundException();
+
+            return blogPosts;
+        }
+
+        public async Task<IEnumerable<BlogPost>> GetRecentBlogPostsAsync(int count)
+        {
+            var blogPosts = await _unitOfWork.BlogPosts.GetRecentBlogPostsAsync(count);
+            if (!blogPosts.Any())
+                throw new BlogPostNotFoundException();
+
+            return blogPosts;
         }
     }
 }

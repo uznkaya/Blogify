@@ -1,14 +1,12 @@
 ﻿using Blogify.Domain.Entities;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 
 namespace Blogify.Infrastructure.Interfaces
 {
     public interface ICommentRepository : IRepository<Comment>
     {
         Task DeleteCommentAsync(int commentId);
+        Task<IEnumerable<Comment>> GetCommentsByBlogPostIdAsync(int blogPostId);
+        Task<IEnumerable<Comment>> GetCommentsByUserIdAsync(int userId);
+        Task<IEnumerable<Comment>> GetRepliesByCommentIdAsync(int commentId);
     }
 }

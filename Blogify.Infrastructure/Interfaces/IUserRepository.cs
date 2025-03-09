@@ -6,5 +6,8 @@ namespace Blogify.Infrastructure.Interfaces
     {
         Task<User> GetByUsernameAsync(string username);
         Task DeleteUserAsync(int userId);
+        Task<IEnumerable<BlogPost>> GetUserBlogPostsAsync(int userId);
+        Task<IEnumerable<Comment>> GetUserCommentsAsync(int userId);
+        Task<IEnumerable<Like>> GetUserLikesAsync(int userId);
     }
 }

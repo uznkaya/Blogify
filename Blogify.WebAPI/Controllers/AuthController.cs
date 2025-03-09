@@ -1,11 +1,10 @@
-﻿using Microsoft.AspNetCore.Http;
-using Microsoft.AspNetCore.Mvc;
+﻿using Blogify.Application.DTOs;
 using Blogify.Application.Interfaces;
-using Blogify.Application.DTOs;
+using Microsoft.AspNetCore.Mvc;
 
 namespace Blogify.WebAPI.Controllers
 {
-    [Route("api/auth")]
+    [Route("api/[controller]")]
     [ApiController]
     public class AuthController : ControllerBase
     {
@@ -18,15 +17,29 @@ namespace Blogify.WebAPI.Controllers
         [HttpPost("register")]
         public async Task<IActionResult> Register([FromBody] RegisterModel model)
         {
-            await _authService.Register(model.Name, model.Surname, model.Username, model.Password);
-            return Ok(new { message = "User registered successfully" });
+            try
+            {
+                await _authService.Register(model);
+                return Ok(new { message = "User registered successfully" });
+            }
+            catch (Exception ex)
+            {
+                return StatusCode(StatusCodes.Status500InternalServerError, ex.Message);
+            }
         }
 
         [HttpPost("login")]
         public async Task<IActionResult> Login([FromBody] LoginModel model)
         {
-            var token = await _authService.Authenticate(model.Username, model.Password);
-            return Ok(new { Token = token });
+            try
+            {
+                var token = await _authService.Authenticate(model);
+                return Ok(new { Token = token });
+            }
+            catch (Exception ex)
+            {
+                return StatusCode(StatusCodes.Status500InternalServerError, ex.Message);
+            }
         }
     }
 }

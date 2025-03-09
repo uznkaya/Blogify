@@ -1,13 +1,12 @@
 ﻿using Blogify.Application.DTOs;
 using Blogify.Application.Interfaces;
 using Blogify.Domain.Entities;
-using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 
 namespace Blogify.WebAPI.Controllers
 {
 
-    [Route("api/blogpost")]
+    [Route("api/[controller]")]
     [ApiController]
     public class BlogPostController : ControllerBase
     {
@@ -53,7 +52,7 @@ namespace Blogify.WebAPI.Controllers
             }
         }
 
-        [HttpPut]
+        [HttpPut("{blogPostId}")]
         public async Task<IActionResult> EditBlogPost(int blogPostId, BlogPostDto blogPostDto)
         {
             try
@@ -74,13 +73,41 @@ namespace Blogify.WebAPI.Controllers
             }
         }
 
-        [HttpDelete]
+        [HttpDelete("{blogPostId}")]
         public async Task<IActionResult> DeleteBlogPost(int blogPostId)
         {
             try
             {
                 await _blogPostService.DeleteBlogPostAsync(blogPostId);
                 return Ok(new { Message = "Blogpost successfully deleted " });
+            }
+            catch (Exception ex)
+            {
+                return StatusCode(StatusCodes.Status500InternalServerError, ex.Message);
+            }
+        }
+
+        [HttpGet("user/{userId}")]
+        public async Task<IActionResult> GetBlogPostsByUserId(int userId)
+        {
+            try
+            {
+                var blogPosts = await _blogPostService.GetBlogPostsByUserIdAsync(userId);
+                return Ok(blogPosts);
+            }
+            catch (Exception ex)
+            {
+                return StatusCode(StatusCodes.Status500InternalServerError, ex.Message);
+            }
+        }
+
+        [HttpGet("recent/{count}")]
+        public async Task<IActionResult> GetRecentBlogPosts(int count)
+        {
+            try
+            {
+                var blogPosts = await _blogPostService.GetRecentBlogPostsAsync(count);
+                return Ok(blogPosts);
             }
             catch (Exception ex)
             {

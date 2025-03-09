@@ -1,11 +1,7 @@
 ﻿using Blogify.Infrastructure.Data;
 using Blogify.Infrastructure.Interfaces;
 using Microsoft.EntityFrameworkCore;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
+using System.Linq.Expressions;
 
 namespace Blogify.Infrastructure.Repositories
 {
@@ -19,11 +15,9 @@ namespace Blogify.Infrastructure.Repositories
             _context = context;
             _dbSet = _context.Set<T>();
         }
-
         public async Task AddAsync(T entity)
         {
             await _dbSet.AddAsync(entity);
-            await _context.SaveChangesAsync();
         }
         public async Task<IEnumerable<T>> GetAllAsync()
         {
@@ -31,13 +25,9 @@ namespace Blogify.Infrastructure.Repositories
         }
         public async Task UpdateAsync(T entity)
         {
-            var existingEntity = await _dbSet.FindAsync(GetPrimaryKeyValue(entity));
-
-            if (existingEntity == null)
-                throw new Exception($"{typeof(T)} not found");
-
-            _context.Entry(existingEntity).CurrentValues.SetValues(entity);
-            await _context.SaveChangesAsync();
+            _dbSet.Attach(entity);
+            _context.Entry(entity).State = EntityState.Modified;
+            await Task.CompletedTask;
         }
         public async Task DeleteAsync(int id)
         {
@@ -45,24 +35,11 @@ namespace Blogify.Infrastructure.Repositories
             if (entity != null)
             {
                 _dbSet.Remove(entity);
-                await _context.SaveChangesAsync();
             }
         }
-        public async Task<T> GetByIdAsync(int id)
+        public async Task<T?> FindAsync(Expression<Func<T, bool>> predicate)
         {
-            return await _dbSet.FindAsync(id);
-        }
-
-
-        private object GetPrimaryKeyValue(T entity)
-        {
-            var keyName = _context.Model.FindEntityType(typeof(T))
-                .FindPrimaryKey()
-                .Properties
-                .Select(x => x.Name)
-                .FirstOrDefault();
-
-            return entity.GetType().GetProperty(keyName)?.GetValue(entity, null);
+            return await _dbSet.FirstOrDefaultAsync(predicate);
         }
     }
 }

@@ -1,7 +1,6 @@
-﻿using Blogify.Application.Interfaces;
-using Blogify.Application.DTOs;
+﻿using Blogify.Application.DTOs;
+using Blogify.Application.Interfaces;
 using Blogify.Domain.Entities;
-using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 
 namespace Blogify.WebAPI.Controllers
@@ -35,7 +34,7 @@ namespace Blogify.WebAPI.Controllers
                 return StatusCode(StatusCodes.Status500InternalServerError, ex.Message);
             }
         }
-        [HttpDelete]
+        [HttpDelete("{commentId}")]
         public async Task<IActionResult> DeleteComment(int commentId)
         {
             try
@@ -75,7 +74,7 @@ namespace Blogify.WebAPI.Controllers
             }
         }
 
-        [HttpPut]
+        [HttpPut("{commentId}")]
         public async Task<IActionResult> UpdateComment(int commentId, CommentDto commentDto)
         {
             try
@@ -90,6 +89,48 @@ namespace Blogify.WebAPI.Controllers
 
                 await _commentService.UpdateCommentAsync(commentId, comment);
                 return Ok("Comment successfully updated.");
+            }
+            catch (Exception ex)
+            {
+                return StatusCode(StatusCodes.Status500InternalServerError, ex.Message);
+            }
+        }
+
+        [HttpGet("blogpost/{blogPostId}")]
+        public async Task<IActionResult> GetCommentsByBlogPostId(int blogPostId)
+        {
+            try
+            {
+                var comments = await _commentService.GetCommentsByBlogPostIdAsync(blogPostId);
+                return Ok(comments);
+            }
+            catch (Exception ex)
+            {
+                return StatusCode(StatusCodes.Status500InternalServerError, ex.Message);
+            }
+        }
+
+        [HttpGet("user/{userId}")]
+        public async Task<IActionResult> GetCommentsByUserId(int userId)
+        {
+            try
+            {
+                var comments = await _commentService.GetCommentsByUserIdAsync(userId);
+                return Ok(comments);
+            }
+            catch (Exception ex)
+            {
+                return StatusCode(StatusCodes.Status500InternalServerError, ex.Message);
+            }
+        }
+
+        [HttpGet("replies/{commentId}")]
+        public async Task<IActionResult> GetRepliesByCommentId(int commentId)
+        {
+            try
+            {
+                var replies = await _commentService.GetRepliesByCommentIdAsync(commentId);
+                return Ok(replies);
             }
             catch (Exception ex)
             {

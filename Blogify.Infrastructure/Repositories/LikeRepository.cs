@@ -2,11 +2,6 @@
 using Blogify.Infrastructure.Data;
 using Blogify.Infrastructure.Interfaces;
 using Microsoft.EntityFrameworkCore;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 
 namespace Blogify.Infrastructure.Repositories
 {
@@ -19,13 +14,22 @@ namespace Blogify.Infrastructure.Repositories
         public async Task DeleteLikeAsync(int likeId)
         {
             var like = await _dbSet
-                .FirstOrDefaultAsync(l => l.Id == likeId);
-
-            if (like == null)
-                throw new Exception("Like not found");
+                .FirstOrDefaultAsync(l => l.Id == likeId && !l.IsDeleted);
 
             like.IsDeleted = true;
-            await _context.SaveChangesAsync();
+        }
+
+        public async Task<int> GetLikeCountByBlogPostIdAsync(int blogPostId)
+        {
+            return await _dbSet
+                .Where(l => l.BlogPostId == blogPostId && !l.IsDeleted)
+                .CountAsync();
+        }
+
+        public async Task<bool> IsLikedByUserAsync(int userId, int blogPostId)
+        {
+            return await _dbSet
+                .AnyAsync(l => l.UserId == userId && l.BlogPostId == blogPostId && !l.IsDeleted);
         }
     }
 }

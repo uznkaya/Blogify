@@ -1,4 +1,5 @@
-﻿using Blogify.Application.Interfaces;
+﻿using Blogify.Application.DTOs;
+using Blogify.Application.Interfaces;
 using Blogify.Domain.Entities;
 using Blogify.Infrastructure.Interfaces;
 using Microsoft.Extensions.Configuration;
@@ -11,19 +12,19 @@ namespace Blogify.Application.Services
 {
     public class AuthService : IAuthService
     {
-        private readonly IUserRepository _userRepository;
+        private readonly IUnitOfWork _unitOfWork;
         private readonly IConfiguration _configuration;
 
-        public AuthService(IUserRepository userRepository, IConfiguration configuration)
+        public AuthService(IUnitOfWork unitOfWork, IConfiguration configuration)
         {
-            _userRepository = userRepository;
+            _unitOfWork = unitOfWork;
             _configuration = configuration;
         }
 
-        public async Task<string> Authenticate(string username, string password)
+        public async Task<string> Authenticate(LoginModel loginModel)
         {
-            var user = await _userRepository.GetByUsernameAsync(username);
-            if (user == null || !BCrypt.Net.BCrypt.Verify(password, user.PasswordHash))
+            var user = await _unitOfWork.Users.GetByUsernameAsync(loginModel.Username);
+            if (user == null || !BCrypt.Net.BCrypt.Verify(loginModel.Password, user.PasswordHash))
                 throw new UnauthorizedAccessException("Invalid username or password");
 
             var tokenHandler = new JwtSecurityTokenHandler();
@@ -44,17 +45,18 @@ namespace Blogify.Application.Services
             return tokenHandler.WriteToken(token);
         }
 
-        public async Task Register(string name, string surname, string username, string password)
+        public async Task Register(RegisterModel registerModel)
         {
-            var hashedPassword = BCrypt.Net.BCrypt.HashPassword(password);
+            var hashedPassword = BCrypt.Net.BCrypt.HashPassword(registerModel.Password);
             var user = new User
             {
-                Username = username,
+                Username = registerModel.Username,
                 PasswordHash = hashedPassword,
-                Name = name,
-                Surname = surname
+                Name = registerModel.Name,
+                Surname = registerModel.Surname
             };
-            await _userRepository.AddAsync(user);
+            await _unitOfWork.Users.AddAsync(user);
+            await _unitOfWork.CompleteAsync();
         }
     }
 }

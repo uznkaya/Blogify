@@ -2,11 +2,6 @@
 using Blogify.Infrastructure.Data;
 using Blogify.Infrastructure.Interfaces;
 using Microsoft.EntityFrameworkCore;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 
 namespace Blogify.Infrastructure.Repositories
 {
@@ -21,10 +16,7 @@ namespace Blogify.Infrastructure.Repositories
             var _blogpost = await _dbSet
                 .Include(c => c.Comments)
                 .Include(l => l.Likes)
-                .FirstOrDefaultAsync(x => x.Id == blogPostId);
-
-            if (_blogpost == null)
-                throw new Exception("BlogPost not found");
+                .FirstOrDefaultAsync(bp => bp.Id == blogPostId && !bp.IsDeleted);
 
             _blogpost.IsDeleted = true;
 
@@ -36,8 +28,20 @@ namespace Blogify.Infrastructure.Repositories
             {
                 like.IsDeleted = true;
             }
-
-            await _context.SaveChangesAsync();
+        }
+        public async Task<IEnumerable<BlogPost>> GetBlogPostsByUserIdAsync(int userId)
+        {
+            return await _dbSet
+                .Where(bp => bp.UserId == userId && !bp.IsDeleted)
+                .ToListAsync();
+        }
+        public async Task<IEnumerable<BlogPost>> GetRecentBlogPostsAsync(int count)
+        {
+            return await _dbSet
+                .Where(bp => !bp.IsDeleted)
+                .OrderByDescending(bp => bp.CreatedDate)
+                .Take(count)
+                .ToListAsync();
         }
     }
 }

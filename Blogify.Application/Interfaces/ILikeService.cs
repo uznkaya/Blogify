@@ -1,9 +1,4 @@
 ﻿using Blogify.Domain.Entities;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 
 namespace Blogify.Application.Interfaces
 {
@@ -13,5 +8,7 @@ namespace Blogify.Application.Interfaces
         Task<IEnumerable<Like>> GetAllLikesAsync();
         Task DeleteLikeAsync(int likeId);
         Task<Like> GetLikeByIdAsync(int likeId);
+        Task<int> GetLikeCountByBlogPostIdAsync(int blogPostId);
+        Task<bool> IsLikedByUserAsync(int userId, int blogPostId);
     }
 }

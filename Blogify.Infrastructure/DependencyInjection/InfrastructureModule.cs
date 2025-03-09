@@ -1,10 +1,7 @@
 ﻿using Autofac;
 using Blogify.Infrastructure.Data;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
+using Blogify.Infrastructure.Interfaces;
+using Blogify.Infrastructure.Repositories;
 
 namespace Blogify.Infrastructure.DependencyInjection
 {
@@ -19,6 +16,10 @@ namespace Blogify.Infrastructure.DependencyInjection
             builder.RegisterAssemblyTypes(typeof(InfrastructureModule).Assembly)
                 .Where(t => t.Name.EndsWith("Repository"))
                 .AsImplementedInterfaces()
+                .InstancePerLifetimeScope();
+
+            builder.RegisterType<UnitOfWork>()
+                .As<IUnitOfWork>()
                 .InstancePerLifetimeScope();
         }
     }

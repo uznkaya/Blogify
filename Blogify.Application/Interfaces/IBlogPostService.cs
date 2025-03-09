@@ -1,10 +1,4 @@
-﻿using Blogify.Application.DTOs;
-using Blogify.Domain.Entities;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
+﻿using Blogify.Domain.Entities;
 
 namespace Blogify.Application.Interfaces
 {
@@ -14,5 +8,7 @@ namespace Blogify.Application.Interfaces
         Task<IEnumerable<BlogPost>> GetAllBlogPostAsync();
         Task UpdateBlogPostAsync(int blogPostId, BlogPost updatedBlogPost);
         Task DeleteBlogPostAsync(int blogPostId);
+        Task<IEnumerable<BlogPost>> GetBlogPostsByUserIdAsync(int userId);
+        Task<IEnumerable<BlogPost>> GetRecentBlogPostsAsync(int count);
     }
 }
