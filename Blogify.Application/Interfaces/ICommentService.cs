@@ -1,16 +1,17 @@
-﻿using Blogify.Domain.Entities;
+﻿using Blogify.Domain.Common;
+using Blogify.Domain.Entities;
 
 namespace Blogify.Application.Interfaces
 {
     public interface ICommentService
     {
-        Task CreateCommentAsync(Comment comment);
-        Task<IEnumerable<Comment>> GetAllCommentsAsync();
-        Task UpdateCommentAsync(int commentId, Comment comment);
-        Task DeleteCommentAsync(int commentId);
-        Task<Comment> GetCommentByIdAsync(int commentId);
-        Task<IEnumerable<Comment>> GetCommentsByBlogPostIdAsync(int blogPostId);
-        Task<IEnumerable<Comment>> GetCommentsByUserIdAsync(int userId);
-        Task<IEnumerable<Comment>> GetRepliesByCommentIdAsync(int commentId);
+        Task<Result> CreateCommentAsync(Comment comment);
+        Task<Result<IEnumerable<Comment>>> GetAllCommentsAsync();
+        Task<Result> UpdateCommentAsync(int commentId, Comment comment);
+        Task<Result> DeleteCommentAsync(int commentId);
+        Task<Result<Comment>> GetCommentByIdAsync(int commentId);
+        Task<Result<IEnumerable<Comment>>> GetCommentsByBlogPostIdAsync(int blogPostId);
+        Task<Result<IEnumerable<Comment>>> GetCommentsByUserIdAsync(int userId);
+        Task<Result<IEnumerable<Comment>>> GetRepliesByCommentIdAsync(int commentId);
     }
 }

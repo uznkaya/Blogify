@@ -6,10 +6,9 @@ using System.Threading.Tasks;
 
 namespace Blogify.Domain.Exceptions
 {
-    public class LikeNotFoundException : Exception
+    public class LikeNotFoundException : NotFoundException
     {
         public LikeNotFoundException() : base("Like not found.") { }
         public LikeNotFoundException(string message) : base(message) { }
-        public LikeNotFoundException(string message, Exception innerException) : base(message, innerException) { }
     }
 }

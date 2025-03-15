@@ -1,109 +1,182 @@
 ﻿using Blogify.Application.Interfaces;
+using Blogify.Domain.Common;
 using Blogify.Domain.Entities;
-using Blogify.Domain.Exceptions;
 using Blogify.Infrastructure.Interfaces;
+using Microsoft.Extensions.Logging;
 
 namespace Blogify.Application.Services
 {
     public class CommentService : ICommentService
     {
         private readonly IUnitOfWork _unitOfWork;
-        public CommentService(IUnitOfWork unitOfWork)
+        private readonly ILogger<CommentService> _logger;
+        public CommentService(IUnitOfWork unitOfWork, ILogger<CommentService> logger)
         {
             _unitOfWork = unitOfWork;
+            _logger = logger;
         }
 
-        public async Task CreateCommentAsync(Comment comment)
+        public async Task<Result> CreateCommentAsync(Comment comment)
         {
-            var user = await _unitOfWork.Users.FindAsync(u => u.Id == comment.UserId && !u.IsDeleted);
-            if (user == null)
-                throw new UserNotFoundException();
+            try
+            {
+                var user = await _unitOfWork.Users.FindAsync(u => u.Id == comment.UserId && !u.IsDeleted);
+                if (user == null)
+                    return Result.Failure("User not found");
 
-            var blogPost = await _unitOfWork.BlogPosts.FindAsync(bp => bp.Id == comment.BlogPostId && !bp.IsDeleted);
-            if (blogPost == null)
-                throw new BlogPostNotFoundException();
+                var blogPost = await _unitOfWork.BlogPosts.FindAsync(bp => bp.Id == comment.BlogPostId && !bp.IsDeleted);
+                if (blogPost == null)
+                    return Result.Failure("BlogPost not found");
 
-            await _unitOfWork.Comments.AddAsync(comment);
-            await _unitOfWork.CompleteAsync();
+                await _unitOfWork.Comments.AddAsync(comment);
+                await _unitOfWork.CompleteAsync();
+
+                return Result.Success("Successfully created comment.");
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "An error occurred while creating comment");
+                return Result.Failure("An error occurred while creating comment.");
+            }
         }
 
-        public async Task DeleteCommentAsync(int commentId)
+        public async Task<Result> DeleteCommentAsync(int commentId)
         {
-            var comment = _unitOfWork.Users.FindAsync(u => u.Id == commentId && !u.IsDeleted);
-            if (comment == null)
-                throw new CommentNotFoundException();
+            try
+            {
+                var comment = await _unitOfWork.Comments.FindAsync(c => c.Id == commentId && !c.IsDeleted);
+                if (comment == null)
+                    return Result.Failure("Comment not found");
 
-            await _unitOfWork.Comments.DeleteCommentAsync(commentId);
-            await _unitOfWork.CompleteAsync();
+                await _unitOfWork.Comments.DeleteCommentAsync(commentId);
+                await _unitOfWork.CompleteAsync();
+
+                return Result.Success("Successfully deleted comment.");
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "An error occurred while deleting comment");
+                return Result.Failure("An error occurred while deleting comment.");
+            }
         }
 
-        public async Task<IEnumerable<Comment>> GetAllCommentsAsync()
+        public async Task<Result<IEnumerable<Comment>>> GetAllCommentsAsync()
         {
-            var comments = await _unitOfWork.Comments.GetAllAsync();
-            if (!comments.Any())
-                throw new CommentNotFoundException();
+            try
+            {
+                var comments = await _unitOfWork.Comments.GetAllAsync();
+                if (!comments.Any())
+                    return Result.Failure<IEnumerable<Comment>>("No comments found");
 
-            return comments;
+                return Result.Success<IEnumerable<Comment>>(comments);
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "An error occurred while fetching comments");
+                return Result.Failure<IEnumerable<Comment>>("An error occurred while fetching comments");
+            }
         }
 
-        public async Task<Comment> GetCommentByIdAsync(int commentId)
+        public async Task<Result<Comment>> GetCommentByIdAsync(int commentId)
         {
-            var comment = await _unitOfWork.Comments.FindAsync(c => c.Id == commentId && !c.IsDeleted);
-            if (comment == null)
-                throw new CommentNotFoundException();
+            try
+            {
+                var comment = await _unitOfWork.Comments.FindAsync(c => c.Id == commentId && !c.IsDeleted);
+                if (comment == null)
+                    return Result.Failure<Comment>("Comment not found");
 
-            return comment;
+                return Result.Success(comment);
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "An error occurred while fetching comment");
+                return Result.Failure<Comment>("An error occurred while fetching comment");
+            }
         }
 
-        public async Task UpdateCommentAsync(int commentId, Comment updatedComment)
+        public async Task<Result> UpdateCommentAsync(int commentId, Comment updatedComment)
         {
-            var comment = await _unitOfWork.Comments.FindAsync(c => c.Id == commentId && !c.IsDeleted);
-            if (comment == null)
-                throw new CommentNotFoundException();
+            try
+            {
+                var comment = await _unitOfWork.Comments.FindAsync(c => c.Id == commentId && !c.IsDeleted);
+                if (comment == null)
+                    return Result.Failure("Comment not found");
 
-            comment.Content = updatedComment.Content;
+                comment.Content = updatedComment.Content;
 
-            await _unitOfWork.Comments.UpdateAsync(comment);
-            await _unitOfWork.CompleteAsync();
+                await _unitOfWork.Comments.UpdateAsync(comment);
+                await _unitOfWork.CompleteAsync();
+
+                return Result.Success("Successfully updated comment.");
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "An error occurred while updating comment");
+                return Result.Failure("An error occurred while updating comment.");
+            }
         }
 
-        public async Task<IEnumerable<Comment>> GetCommentsByBlogPostIdAsync(int blogPostId)
+        public async Task<Result<IEnumerable<Comment>>> GetCommentsByBlogPostIdAsync(int blogPostId)
         {
-            var blogPost = await _unitOfWork.BlogPosts.FindAsync(bp => bp.Id == blogPostId && !bp.IsDeleted);
-            if (blogPost == null)
-                throw new BlogPostNotFoundException();
+            try
+            {
+                var blogPost = await _unitOfWork.BlogPosts.FindAsync(bp => bp.Id == blogPostId && !bp.IsDeleted);
+                if (blogPost == null)
+                    return Result.Failure<IEnumerable<Comment>>("BlogPost not found");
 
-            var comments = await _unitOfWork.Comments.GetCommentsByBlogPostIdAsync(blogPost.Id);
-            if (!comments.Any())
-                throw new CommentNotFoundException();
+                var comments = await _unitOfWork.Comments.GetCommentsByBlogPostIdAsync(blogPost.Id);
+                if (!comments.Any())
+                    return Result.Failure<IEnumerable<Comment>>("No comments found for this blogpost");
 
-            return comments;
+                return Result.Success(comments);
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "An error occurred while fetching comments");
+                return Result.Failure<IEnumerable<Comment>>("An error occurred while fetching comments");
+            }
         }
 
-        public async Task<IEnumerable<Comment>> GetCommentsByUserIdAsync(int userId)
+        public async Task<Result<IEnumerable<Comment>>> GetCommentsByUserIdAsync(int userId)
         {
-            var user = await _unitOfWork.Users.FindAsync(u => u.Id == userId && !u.IsDeleted);
-            if (user == null)
-                throw new UserNotFoundException();
+            try
+            {
+                var user = await _unitOfWork.Users.FindAsync(u => u.Id == userId && !u.IsDeleted);
+                if (user == null)
+                    return Result.Failure<IEnumerable<Comment>>("User not found");
 
-            var comments = await _unitOfWork.Comments.GetCommentsByUserIdAsync(user.Id);
-            if (!comments.Any())
-                throw new CommentNotFoundException();
+                var comments = await _unitOfWork.Comments.GetCommentsByUserIdAsync(user.Id);
+                if (!comments.Any())
+                    return Result.Failure<IEnumerable<Comment>>("No comments found for this user");
 
-            return comments;
+                return Result.Success(comments);
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "An error occurred while fetching comments");
+                return Result.Failure<IEnumerable<Comment>>("An error occurred while fetching comments");
+            }
         }
 
-        public async Task<IEnumerable<Comment>> GetRepliesByCommentIdAsync(int commentId)
+        public async Task<Result<IEnumerable<Comment>>> GetRepliesByCommentIdAsync(int commentId)
         {
-            var parentComment = await _unitOfWork.Comments.FindAsync(c => c.Id == commentId && !c.IsDeleted);
-            if (parentComment == null)
-                throw new CommentNotFoundException("Parent Comment not found.");
+            try
+            {
+                var parentComment = await _unitOfWork.Comments.FindAsync(c => c.Id == commentId && !c.IsDeleted);
+                if (parentComment == null)
+                    return Result.Failure<IEnumerable<Comment>>("Parent Comment not found");
 
-            var replies = await _unitOfWork.Comments.GetRepliesByCommentIdAsync(parentComment.Id);
-            if (!replies.Any())
-                throw new CommentNotFoundException($"Replies not found for parentCommandId:{commentId}");
+                var replies = await _unitOfWork.Comments.GetRepliesByCommentIdAsync(parentComment.Id);
+                if (!replies.Any())
+                    return Result.Failure<IEnumerable<Comment>>("Replies not found for parentCommandId");
 
-            return replies;
+                return Result.Success(replies);
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "An error occurred while fetching replies");
+                return Result.Failure<IEnumerable<Comment>>("An error occurred while fetching replies");
+            }
         }
     }
 }

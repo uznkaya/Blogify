@@ -19,100 +19,57 @@ namespace Blogify.WebAPI.Controllers
         [HttpPost]
         public async Task<IActionResult> AddBlogPost(BlogPostDto blogPostDto)
         {
-            try
+            var blogPost = new BlogPost
             {
-                var blogPost = new BlogPost
-                {
-                    Title = blogPostDto.Title,
-                    Content = blogPostDto.Content,
-                    UserId = blogPostDto.UserId
-                };
+                Title = blogPostDto.Title,
+                Content = blogPostDto.Content,
+                UserId = blogPostDto.UserId
+            };
 
-                await _blogPostService.CreateBlogPostAsync(blogPost);
-                return Ok("Blogpost successfully created.");
-            }
-            catch (Exception ex)
-            {
-                return StatusCode(StatusCodes.Status500InternalServerError, ex.Message);
-
-            }
+            var result = await _blogPostService.CreateBlogPostAsync(blogPost);
+            return Ok(result);
         }
 
         [HttpGet]
         public async Task<IActionResult> GetAllBlogPost()
         {
-            try
-            {
-                var blogPosts = await _blogPostService.GetAllBlogPostAsync();
-                return Ok(blogPosts);
-            }
-            catch (Exception ex)
-            {
-                return StatusCode(StatusCodes.Status500InternalServerError, ex.Message);
-            }
+            var result = await _blogPostService.GetAllBlogPostAsync();
+            return Ok(result);
         }
 
         [HttpPut("{blogPostId}")]
         public async Task<IActionResult> EditBlogPost(int blogPostId, BlogPostDto blogPostDto)
         {
-            try
+            var editedBlogPost = new BlogPost
             {
-                var editedBlogPost = new BlogPost
-                {
-                    Title = blogPostDto.Title,
-                    Content = blogPostDto.Content,
-                    UserId = blogPostDto.UserId
-                };
+                Title = blogPostDto.Title,
+                Content = blogPostDto.Content,
+                UserId = blogPostDto.UserId
+            };
 
-                await _blogPostService.UpdateBlogPostAsync(blogPostId, editedBlogPost);
-                return Ok("Blogpost successfully edited.");
-            }
-            catch (Exception ex)
-            {
-                return StatusCode(StatusCodes.Status500InternalServerError, ex.Message);
-            }
+            var result = await _blogPostService.UpdateBlogPostAsync(blogPostId, editedBlogPost);
+            return Ok(result);
         }
 
         [HttpDelete("{blogPostId}")]
         public async Task<IActionResult> DeleteBlogPost(int blogPostId)
         {
-            try
-            {
-                await _blogPostService.DeleteBlogPostAsync(blogPostId);
-                return Ok(new { Message = "Blogpost successfully deleted " });
-            }
-            catch (Exception ex)
-            {
-                return StatusCode(StatusCodes.Status500InternalServerError, ex.Message);
-            }
+            var result = await _blogPostService.DeleteBlogPostAsync(blogPostId);
+            return Ok(result);
         }
 
         [HttpGet("user/{userId}")]
         public async Task<IActionResult> GetBlogPostsByUserId(int userId)
         {
-            try
-            {
-                var blogPosts = await _blogPostService.GetBlogPostsByUserIdAsync(userId);
-                return Ok(blogPosts);
-            }
-            catch (Exception ex)
-            {
-                return StatusCode(StatusCodes.Status500InternalServerError, ex.Message);
-            }
+            var result = await _blogPostService.GetBlogPostsByUserIdAsync(userId);
+            return Ok(result);
         }
 
         [HttpGet("recent/{count}")]
         public async Task<IActionResult> GetRecentBlogPosts(int count)
         {
-            try
-            {
-                var blogPosts = await _blogPostService.GetRecentBlogPostsAsync(count);
-                return Ok(blogPosts);
-            }
-            catch (Exception ex)
-            {
-                return StatusCode(StatusCodes.Status500InternalServerError, ex.Message);
-            }
+            var result = await _blogPostService.GetRecentBlogPostsAsync(count);
+            return Ok(result);
         }
     }
 }

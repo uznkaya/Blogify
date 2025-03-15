@@ -6,10 +6,9 @@ using System.Threading.Tasks;
 
 namespace Blogify.Domain.Exceptions
 {
-    public class CommentNotFoundException : Exception
+    public class CommentNotFoundException : NotFoundException
     {
         public CommentNotFoundException() : base("Comment not found.") { }
         public CommentNotFoundException(string message) : base(message) { }
-        public CommentNotFoundException(string message, Exception innerException) : base(message, innerException) { }
     }
 }

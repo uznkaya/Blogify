@@ -10,95 +10,59 @@ namespace Blogify.WebAPI.Controllers
     public class LikeController : ControllerBase
     {
         private readonly ILikeService _likeService;
+
         public LikeController(ILikeService likeService)
         {
             _likeService = likeService;
         }
+
         [HttpPost]
         public async Task<IActionResult> AddLike(LikeDto likeDto)
         {
-            try
+            var like = new Like
             {
-                var like = new Like
-                {
-                    UserId = likeDto.UserId,
-                    BlogPostId = likeDto.BlogPostId,
-                    CommentId = likeDto.CommentId
-                };
+                UserId = likeDto.UserId,
+                BlogPostId = likeDto.BlogPostId,
+                CommentId = likeDto.CommentId
+            };
 
-                await _likeService.CreateLikeAsync(like);
-                return Ok("Like successfully created.");
-            }
-            catch (Exception ex)
-            {
-                return StatusCode(StatusCodes.Status500InternalServerError, ex.Message);
-            }
+            var result = await _likeService.CreateLikeAsync(like);
+            return Ok(result);
         }
+
         [HttpDelete("{likeId}")]
         public async Task<IActionResult> DeleteLike(int likeId)
         {
-            try
-            {
-                await _likeService.DeleteLikeAsync(likeId);
-                return Ok("Like successfully deleted.");
-            }
-            catch (Exception ex)
-            {
-                return StatusCode(StatusCodes.Status500InternalServerError, ex.Message);
-            }
+            var result = await _likeService.DeleteLikeAsync(likeId);
+            return Ok(result);
         }
+
         [HttpGet]
         public async Task<IActionResult> GetAllLikes()
         {
-            try
-            {
-                var likes = await _likeService.GetAllLikesAsync();
-                return Ok(likes);
-            }
-            catch (Exception ex)
-            {
-                return StatusCode(StatusCodes.Status500InternalServerError, ex.Message);
-            }
+            var result = await _likeService.GetAllLikesAsync();
+            return Ok(result);
         }
+
         [HttpGet("{likeId}")]
         public async Task<IActionResult> GetLikeById(int likeId)
         {
-            try
-            {
-                var like = await _likeService.GetLikeByIdAsync(likeId);
-                return Ok(like);
-            }
-            catch (Exception ex)
-            {
-                return StatusCode(StatusCodes.Status500InternalServerError, ex.Message);
-            }
+            var result = await _likeService.GetLikeByIdAsync(likeId);
+            return Ok(result);
         }
+
         [HttpGet("count/{blogPostId}")]
         public async Task<IActionResult> GetLikeCountByBlogPostId(int blogPostId)
         {
-            try
-            {
-                var likeCount = await _likeService.GetLikeCountByBlogPostIdAsync(blogPostId);
-                return Ok(likeCount);
-            }
-            catch (Exception ex)
-            {
-                return StatusCode(StatusCodes.Status500InternalServerError, ex.Message);
-            }
+            var result = await _likeService.GetLikeCountByBlogPostIdAsync(blogPostId);
+            return Ok(result);
         }
 
         [HttpGet("isliked/{userId}/{blogPostId}")]
         public async Task<IActionResult> IsLikedByUser(int userId, int blogPostId)
         {
-            try
-            {
-                var isLiked = await _likeService.IsLikedByUserAsync(userId, blogPostId);
-                return Ok(isLiked);
-            }
-            catch (Exception ex)
-            {
-                return StatusCode(StatusCodes.Status500InternalServerError, ex.Message);
-            }
+            var result = await _likeService.IsLikedByUserAsync(userId, blogPostId);
+            return Ok(result);
         }
     }
 }

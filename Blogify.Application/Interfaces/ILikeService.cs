@@ -1,14 +1,15 @@
-﻿using Blogify.Domain.Entities;
+﻿using Blogify.Domain.Common;
+using Blogify.Domain.Entities;
 
 namespace Blogify.Application.Interfaces
 {
     public interface ILikeService
     {
-        Task CreateLikeAsync(Like blogPost);
-        Task<IEnumerable<Like>> GetAllLikesAsync();
-        Task DeleteLikeAsync(int likeId);
-        Task<Like> GetLikeByIdAsync(int likeId);
-        Task<int> GetLikeCountByBlogPostIdAsync(int blogPostId);
-        Task<bool> IsLikedByUserAsync(int userId, int blogPostId);
+        Task<Result> CreateLikeAsync(Like blogPost);
+        Task<Result<IEnumerable<Like>>> GetAllLikesAsync();
+        Task<Result> DeleteLikeAsync(int likeId);
+        Task<Result<Like>> GetLikeByIdAsync(int likeId);
+        Task<Result<int>> GetLikeCountByBlogPostIdAsync(int blogPostId);
+        Task<Result<bool>> IsLikedByUserAsync(int userId, int blogPostId);
     }
 }

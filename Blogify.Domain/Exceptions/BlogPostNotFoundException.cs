@@ -6,10 +6,9 @@ using System.Threading.Tasks;
 
 namespace Blogify.Domain.Exceptions
 {
-    public class BlogPostNotFoundException:Exception
+    public class BlogPostNotFoundException: NotFoundException
     {
         public BlogPostNotFoundException() : base("Blog post not found.") { }
         public BlogPostNotFoundException(string message) : base(message) { }
-        public BlogPostNotFoundException(string message, Exception innerException) : base(message, innerException) { }
     }
 }

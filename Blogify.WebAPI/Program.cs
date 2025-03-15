@@ -8,10 +8,12 @@ using System.Text;
 using Microsoft.OpenApi.Models;
 using Blogify.Application.DependencyInjection;
 using Blogify.Infrastructure.DependencyInjection;
+using Blogify.Infrastructure.Middleware;
 
 
 var builder = WebApplication.CreateBuilder(args);
 
+builder.Services.AddLogging();  
 builder.Host.UseServiceProviderFactory(new AutofacServiceProviderFactory());
 
 builder.Host.ConfigureContainer<ContainerBuilder>(containerbuilder =>
@@ -28,7 +30,7 @@ builder.Services.AddControllers()
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen(c =>
 {
-    c.SwaggerDoc("v1", new OpenApiInfo() { Title = "Blogify.WebAPI", Version = "v1" }); 
+    c.SwaggerDoc("v1", new OpenApiInfo() { Title = "Blogify.WebAPI", Version = "v1" });
 });
 
 //  JWT Authentication Ayarlarý
@@ -61,6 +63,7 @@ builder.Services.AddSwaggerGen();
 var app = builder.Build();
 
 //  Middleware Konfigürasyonu
+app.UseMiddleware<ExceptionMiddleware>();
 app.UseCors("AllowAllOrigins");
 app.UseAuthentication();
 app.UseAuthorization();

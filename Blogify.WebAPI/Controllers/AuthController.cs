@@ -17,29 +17,15 @@ namespace Blogify.WebAPI.Controllers
         [HttpPost("register")]
         public async Task<IActionResult> Register([FromBody] RegisterModel model)
         {
-            try
-            {
-                await _authService.Register(model);
-                return Ok(new { message = "User registered successfully" });
-            }
-            catch (Exception ex)
-            {
-                return StatusCode(StatusCodes.Status500InternalServerError, ex.Message);
-            }
+            var result = await _authService.Register(model);
+            return Ok(result);
         }
 
         [HttpPost("login")]
         public async Task<IActionResult> Login([FromBody] LoginModel model)
         {
-            try
-            {
-                var token = await _authService.Authenticate(model);
-                return Ok(new { Token = token });
-            }
-            catch (Exception ex)
-            {
-                return StatusCode(StatusCodes.Status500InternalServerError, ex.Message);
-            }
+            var result = await _authService.Authenticate(model);
+            return Ok(result);
         }
     }
 }
